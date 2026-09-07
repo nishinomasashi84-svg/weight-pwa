@@ -27,6 +27,7 @@
     .stat{padding:14px;border-radius:16px;background:#f9fafb}
     .label{font-size:12px;color:var(--muted)}
     .value{font-size:24px;font-weight:800;margin-top:4px}
+    .goal{background:#ecfdf5}
     .row{display:flex;gap:10px;align-items:end}
     .field{flex:1}
     label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}
@@ -46,7 +47,6 @@
     .empty{color:var(--muted);text-align:center;padding:22px 0}
     @media(max-width:520px){
       .grid{grid-template-columns:1fr 1fr}
-      .grid .stat:last-child{grid-column:1/-1}
       .row{flex-direction:column;align-items:stretch}
     }
   </style>
@@ -66,6 +66,14 @@
       <div class="stat">
         <div class="label">最新</div>
         <div class="value" id="latest">--</div>
+      </div>
+      <div class="stat goal">
+        <div class="label">目標</div>
+        <div class="value">68.0 kg</div>
+      </div>
+      <div class="stat goal">
+        <div class="label">目標まで</div>
+        <div class="value" id="toGoal">--</div>
       </div>
       <div class="stat">
         <div class="label">前回比</div>
@@ -121,6 +129,7 @@
 
 <script>
 const KEY='weight-log-v1';
+const GOAL_WEIGHT=68.0;
 const $=s=>document.querySelector(s);
 const dateEl=$('#date'), weightEl=$('#weight');
 dateEl.value = new Date().toISOString().slice(0,10);
@@ -136,6 +145,13 @@ function render(){
   const data=sortData(load());
   const latest=data.at(-1), prev=data.at(-2), first=data[0];
   $('#latest').textContent=latest?fmt(latest.weight):'--';
+  if(latest){
+    const remaining=latest.weight-GOAL_WEIGHT;
+    $('#toGoal').textContent=remaining>0?remaining.toFixed(1)+' kg':remaining===0?'達成！':'達成！';
+    $('#toGoal').className='value '+(remaining<=0?'down':'');
+  }else{
+    $('#toGoal').textContent='--'; $('#toGoal').className='value';
+  }
   if(latest&&prev){
     const d=latest.weight-prev.weight;
     $('#diff').textContent=(d>0?'+':'')+d.toFixed(1);
@@ -154,7 +170,7 @@ function render(){
   const hist=$('#history');
   hist.innerHTML='';
   if(!data.length){hist.innerHTML='<div class="empty">まだ記録がありません</div>'}
-  [...data].reverse().forEach((r,i,arr)=>{
+  [...data].reverse().forEach((r)=>{
     const originalIndex=data.findIndex(x=>x.date===r.date);
     const prevChrono=originalIndex>0?data[originalIndex-1]:null;
     const d=prevChrono?r.weight-prevChrono.weight:null;
