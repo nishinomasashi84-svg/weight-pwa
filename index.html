@@ -17,6 +17,7 @@
     .chartTop{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:8px}.latest{font-size:29px;font-weight:850;line-height:1}.goalText{font-size:12px;color:var(--muted);text-align:right}.rangeTabs,.recordTabs{display:flex;gap:8px;overflow:auto;scrollbar-width:none}.rangeTabs::-webkit-scrollbar,.recordTabs::-webkit-scrollbar{display:none}.rangeBtn{padding:8px 11px;border:0;border-radius:999px;background:#f3f4f6;color:#111827;font-size:12px;font-weight:700}.rangeBtn.active{background:#111827;color:#fff}
     canvas{width:100%;height:235px;display:block}.recordTabs{margin-bottom:12px}.tabBtn{flex:1;min-width:94px;border:1px solid var(--line);background:#fff;padding:13px 10px;border-radius:14px;font-size:14px;font-weight:800}.tabBtn.active{background:#111827;color:#fff;border-color:#111827}.panel{display:none}.panel.active{display:block}
     .sectionTitle{font-size:18px;font-weight:850;margin-bottom:4px}.row{display:flex;gap:10px;align-items:end}.field{flex:1;min-width:0}label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}input,select,textarea{width:100%;min-width:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;font-size:16px}textarea{min-height:74px;resize:vertical}.gap{height:10px}button{border:0;border-radius:14px;padding:14px 16px;font-weight:800;font-size:15px}.primary{background:#111827;color:#fff}.ghost{background:#eef0f4;color:#111827}.danger{background:#fee2e2;color:#991b1b}.full{width:100%}
+    .quickMeal{display:flex;gap:8px;margin-top:8px}.quickMeal button{flex:1;padding:11px 12px;font-size:13px}.estimateNote{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
     .todayGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.todayItem{background:#f8fafc;border-radius:15px;padding:12px}.todayLabel{font-size:11px;color:var(--muted)}.todayValue{font-size:18px;font-weight:850;margin-top:4px}.net{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.net b{font-size:18px}
     .logTabs{display:flex;gap:8px;margin-bottom:10px}.logBtn{flex:1;background:#f3f4f6;color:#111827;padding:10px 8px;font-size:12px}.logBtn.active{background:#111827;color:#fff}.history{display:flex;flex-direction:column;gap:0}.item{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.itemMain{min-width:0}.itemTitle{font-weight:800}.itemMeta{font-size:12px;color:var(--muted);margin-top:3px}.itemActions{display:flex;align-items:center;gap:7px;white-space:nowrap}.itemActions button{padding:8px 9px;font-size:12px}.empty{text-align:center;color:var(--muted);padding:20px 0}.notice{background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:11px;font-size:13px;line-height:1.5;margin-bottom:10px}.footerNote{font-size:12px;color:var(--muted);line-height:1.6}.hidden{display:none!important}
     @media(max-width:520px){.row{flex-direction:column;align-items:stretch}.todayGrid{grid-template-columns:1fr 1fr 1fr}.chartTop{align-items:center}.latest{font-size:27px}}
@@ -51,11 +52,13 @@
     </div>
 
     <div class="panel" id="mealPanel">
-      <div class="sectionTitle">食事を記録</div><div class="sub" style="margin-bottom:10px">写真解析した内容も入力できます</div>
+      <div class="sectionTitle">食事を記録</div><div class="sub" style="margin-bottom:10px">メニューを文字で入れるとカロリーを自動予測します</div>
       <div id="mealNotice" class="notice hidden"></div>
       <div class="row"><div class="field"><label>日付</label><input type="date" id="mealDate"></div><div class="field"><label>区分</label><select id="mealType"><option>朝食</option><option>昼食</option><option>夕食</option><option>間食</option></select></div></div>
-      <div class="gap"></div><label>メニュー</label><textarea id="mealName" placeholder="例：おにぎり、ゆで卵、味噌汁"></textarea>
-      <div class="gap"></div><label>カロリー（kcal）</label><input type="number" id="mealKcal" inputmode="numeric" min="0" step="1" placeholder="例 520">
+      <div class="gap"></div><label>メニュー</label><textarea id="mealName" placeholder="例：おにぎり1個、ゆで卵、味噌汁"></textarea>
+      <div class="quickMeal"><button class="ghost" id="usualBreakfastBtn">☀️ いつもの朝食</button></div>
+      <div class="gap"></div><label>カロリー（kcal）</label><input type="number" id="mealKcal" inputmode="numeric" min="0" step="1" placeholder="文字入力から自動予測">
+      <div id="estimateNote" class="estimateNote">※予測値です。商品や量によって実際のカロリーは変わります。</div>
       <div class="gap"></div><button class="primary full" id="saveMealBtn">食事を保存</button>
     </div>
 
@@ -95,12 +98,51 @@ const sortByDate=a=>[...a].sort((x,y)=>x.date.localeCompare(y.date));
 const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 ['#date','#mealDate','#exerciseDate'].forEach(id=>$(id).value=localDate());
 
+const CALORIE_RULES=[
+  {keys:['レッドブルシュガーフリー','レッドブル シュガーフリー'],kcal:0,unit:false},
+  {keys:['おにぎり','おむすび'],kcal:180,unit:true},
+  {keys:['ゆで卵','ゆでたまご'],kcal:70,unit:true},
+  {keys:['味噌汁','みそ汁'],kcal:40,unit:true},
+  {keys:['納豆'],kcal:90,unit:true},
+  {keys:['バナナ'],kcal:90,unit:true},
+  {keys:['食パン'],kcal:160,unit:true},
+  {keys:['サラダ'],kcal:80,unit:true},
+  {keys:['ヨーグルト'],kcal:100,unit:true},
+  {keys:['プロテイン'],kcal:120,unit:true}
+];
+function detectCount(text,key){
+  const escaped=key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  const m=text.match(new RegExp(escaped+'[^0-9０-９]{0,4}([0-9０-９]+)\\s*(個|本|杯|枚|食|パック)?'));
+  if(!m)return 1;
+  return Number(m[1].replace(/[０-９]/g,c=>'０１２３４５６７８９'.indexOf(c)))||1;
+}
+function estimateCalories(text){
+  const t=(text||'').replace(/＋/g,'+').trim();if(!t)return null;
+  let total=0,matched=false;
+  for(const rule of CALORIE_RULES){
+    const key=rule.keys.find(k=>t.includes(k));if(!key)continue;
+    matched=true;total+=rule.kcal*(rule.unit?detectCount(t,key):1);
+  }
+  return matched?Math.round(total):null;
+}
+function updateMealEstimate(){
+  if(editingMealId!==null)return;
+  const kcal=estimateCalories($('#mealName').value);
+  if(kcal!==null){$('#mealKcal').value=kcal;$('#estimateNote').textContent='予測カロリー：約 '+kcal+' kcal ※商品や量によって変わります。'}
+  else{$('#estimateNote').textContent='※予測できないメニューはカロリーを手入力してください。';}
+}
+$('#mealName').addEventListener('input',updateMealEstimate);
+$('#usualBreakfastBtn').addEventListener('click',()=>{
+  editingMealId=null;$('#mealType').value='朝食';$('#mealName').value='レッドブル シュガーフリー＋おにぎり1個';$('#mealKcal').value='180';
+  $('#estimateNote').textContent='いつもの朝食：約180 kcal（レッドブル シュガーフリー 0 kcal＋おにぎり1個 約180 kcal）';
+});
+
 document.querySelectorAll('.tabBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabBtn').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.panel).classList.add('active')}));
 document.querySelectorAll('.rangeBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rangeBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');rangeDays=Number(b.dataset.days);renderChart()}));
 document.querySelectorAll('.logBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.logBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentLog=b.dataset.log;renderLogs()}));
 
 $('#saveWeightBtn').addEventListener('click',()=>{const date=$('#date').value,weight=parseFloat($('#weight').value);if(!date||!Number.isFinite(weight))return alert('日付と体重を入力してください');let a=load(KEY).filter(x=>x.date!==date);a.push({date,weight});save(KEY,sortByDate(a));$('#weight').value='';render()});
-$('#saveMealBtn').addEventListener('click',()=>{const date=$('#mealDate').value,type=$('#mealType').value,name=$('#mealName').value.trim(),kcal=parseInt($('#mealKcal').value,10);if(!date||!name||!Number.isFinite(kcal))return alert('日付・メニュー・カロリーを入力してください');let a=load(MEAL_KEY);if(editingMealId!==null)a=a.map(x=>x.id===editingMealId?{...x,date,type,name,kcal}:x);else a.push({id:Date.now(),date,type,name,kcal});save(MEAL_KEY,a);editingMealId=null;$('#mealName').value='';$('#mealKcal').value='';$('#saveMealBtn').textContent='食事を保存';$('#mealNotice').classList.add('hidden');render()});
+$('#saveMealBtn').addEventListener('click',()=>{const date=$('#mealDate').value,type=$('#mealType').value,name=$('#mealName').value.trim(),kcal=parseInt($('#mealKcal').value,10);if(!date||!name||!Number.isFinite(kcal))return alert('日付・メニュー・カロリーを入力してください');let a=load(MEAL_KEY);if(editingMealId!==null)a=a.map(x=>x.id===editingMealId?{...x,date,type,name,kcal}:x);else a.push({id:Date.now(),date,type,name,kcal});save(MEAL_KEY,a);editingMealId=null;$('#mealName').value='';$('#mealKcal').value='';$('#saveMealBtn').textContent='食事を保存';$('#mealNotice').classList.add('hidden');$('#estimateNote').textContent='※予測値です。商品や量によって実際のカロリーは変わります。';render()});
 $('#saveExerciseBtn').addEventListener('click',()=>{const date=$('#exerciseDate').value,type=$('#exerciseType').value,minutes=parseInt($('#exerciseMinutes').value,10),kcal=parseInt($('#exerciseKcal').value,10),memo=$('#exerciseMemo').value.trim();if(!date||!Number.isFinite(minutes)||!Number.isFinite(kcal))return alert('日付・時間・消費カロリーを入力してください');let a=load(EXERCISE_KEY);if(editingExerciseId!==null)a=a.map(x=>x.id===editingExerciseId?{...x,date,type,minutes,kcal,memo}:x);else a.push({id:Date.now(),date,type,minutes,kcal,memo});save(EXERCISE_KEY,a);editingExerciseId=null;$('#exerciseMinutes').value='';$('#exerciseKcal').value='';$('#exerciseMemo').value='';$('#saveExerciseBtn').textContent='運動を保存';render()});
 
 function render(){const weights=sortByDate(load(KEY)),latest=weights.at(-1);$('#latestWeight').textContent=latest?Number(latest.weight).toFixed(1)+' kg':'--';$('#goalRemain').textContent=latest?(latest.weight<=GOAL?'目標達成！':'あと '+(latest.weight-GOAL).toFixed(1)+' kg'):'記録待ち';const today=localDate(),w=weights.find(x=>x.date===today),meals=load(MEAL_KEY).filter(x=>x.date===today),ex=load(EXERCISE_KEY).filter(x=>x.date===today),mk=meals.reduce((s,x)=>s+Number(x.kcal||0),0),ek=ex.reduce((s,x)=>s+Number(x.kcal||0),0);$('#todayWeight').textContent=w?Number(w.weight).toFixed(1)+' kg':'--';$('#todayMeal').textContent=mk;$('#todayExercise').textContent=ek;$('#todayNet').textContent=(mk-ek)+' kcal';renderChart();renderLogs()}
@@ -109,7 +151,7 @@ function renderChart(){const c=$('#chart'),ctx=c.getContext('2d'),dpr=window.dev
 function renderLogs(){const box=$('#logHistory');box.innerHTML='';if(currentLog==='weight'){const a=sortByDate(load(KEY)).reverse();if(!a.length)return box.innerHTML='<div class="empty">体重記録はまだありません</div>';a.slice(0,30).forEach(r=>{const div=document.createElement('div');div.className='item';div.innerHTML=`<div class="itemMain"><div class="itemTitle">${esc(r.date)}</div></div><div class="itemActions"><b>${Number(r.weight).toFixed(1)} kg</b><button class="ghost edit">編集</button><button class="danger del">削除</button></div>`;div.querySelector('.edit').onclick=()=>{$('#date').value=r.date;$('#weight').value=r.weight;document.querySelector('[data-panel="weightPanel"]').click();window.scrollTo({top:250,behavior:'smooth'})};div.querySelector('.del').onclick=()=>{if(confirm('この体重記録を削除しますか？')){save(KEY,load(KEY).filter(x=>x.date!==r.date));render()}};box.appendChild(div)})}
 if(currentLog==='meal'){const a=[...load(MEAL_KEY)].sort((x,y)=>(y.date+String(y.id)).localeCompare(x.date+String(x.id)));if(!a.length)return box.innerHTML='<div class="empty">食事記録はまだありません</div>';a.slice(0,40).forEach(r=>{const div=document.createElement('div');div.className='item';div.innerHTML=`<div class="itemMain"><div class="itemTitle">${esc(r.name)}</div><div class="itemMeta">${esc(r.date)} ・ ${esc(r.type)}</div></div><div class="itemActions"><b>${Number(r.kcal)} kcal</b><button class="ghost edit">編集</button><button class="danger del">削除</button></div>`;div.querySelector('.edit').onclick=()=>{editingMealId=r.id;$('#mealDate').value=r.date;$('#mealType').value=r.type;$('#mealName').value=r.name;$('#mealKcal').value=r.kcal;$('#saveMealBtn').textContent='変更を保存';document.querySelector('[data-panel="mealPanel"]').click();window.scrollTo({top:250,behavior:'smooth'})};div.querySelector('.del').onclick=()=>{if(confirm('この食事記録を削除しますか？')){save(MEAL_KEY,load(MEAL_KEY).filter(x=>x.id!==r.id));render()}};box.appendChild(div)})}
 if(currentLog==='exercise'){const a=[...load(EXERCISE_KEY)].sort((x,y)=>(y.date+String(y.id)).localeCompare(x.date+String(x.id)));if(!a.length)return box.innerHTML='<div class="empty">運動記録はまだありません</div>';a.slice(0,40).forEach(r=>{const div=document.createElement('div');div.className='item';div.innerHTML=`<div class="itemMain"><div class="itemTitle">${esc(r.type)}</div><div class="itemMeta">${esc(r.date)} ・ ${Number(r.minutes)}分${r.memo?' ・ '+esc(r.memo):''}</div></div><div class="itemActions"><b>${Number(r.kcal)} kcal</b><button class="ghost edit">編集</button><button class="danger del">削除</button></div>`;div.querySelector('.edit').onclick=()=>{editingExerciseId=r.id;$('#exerciseDate').value=r.date;$('#exerciseType').value=r.type;$('#exerciseMinutes').value=r.minutes;$('#exerciseKcal').value=r.kcal;$('#exerciseMemo').value=r.memo||'';$('#saveExerciseBtn').textContent='変更を保存';document.querySelector('[data-panel="exercisePanel"]').click();window.scrollTo({top:250,behavior:'smooth'})};div.querySelector('.del').onclick=()=>{if(confirm('この運動記録を削除しますか？')){save(EXERCISE_KEY,load(EXERCISE_KEY).filter(x=>x.id!==r.id));render()}};box.appendChild(div)})}}
-function applyMealImport(){const p=new URLSearchParams(location.search);const name=p.get('meal')||p.get('name'),kcal=p.get('kcal'),type=p.get('type'),date=p.get('date');if(!name&&!kcal)return;if(date)$('#mealDate').value=date;if(type&&['朝食','昼食','夕食','間食'].includes(type))$('#mealType').value=type;if(name)$('#mealName').value=name;if(kcal)$('#mealKcal').value=kcal;$('#mealNotice').textContent='ChatGPTから受け取った食事内容を入れました。確認して保存してください。';$('#mealNotice').classList.remove('hidden');document.querySelector('[data-panel="mealPanel"]').click()}
+function applyMealImport(){const p=new URLSearchParams(location.search);const name=p.get('meal')||p.get('name'),kcal=p.get('kcal'),type=p.get('type'),date=p.get('date');if(!name&&!kcal)return;if(date)$('#mealDate').value=date;if(type&&['朝食','昼食','夕食','間食'].includes(type))$('#mealType').value=type;if(name)$('#mealName').value=name;if(kcal)$('#mealKcal').value=kcal;else updateMealEstimate();$('#mealNotice').textContent='ChatGPTから受け取った食事内容を入れました。確認して保存してください。';$('#mealNotice').classList.remove('hidden');document.querySelector('[data-panel="mealPanel"]').click()}
 window.addEventListener('resize',renderChart);render();applyMealImport();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body>
