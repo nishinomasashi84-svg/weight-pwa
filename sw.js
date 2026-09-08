@@ -1,4 +1,4 @@
-const CACHE='weight-log-v6';
+const CACHE='weight-log-v7';
 const ASSETS=['./','./index.html','./manifest.webmanifest'];
 
 self.addEventListener('install',e=>{
