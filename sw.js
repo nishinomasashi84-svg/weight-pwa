@@ -1,7 +1,7 @@
-const CACHE='weight-log-v12';
+const CACHE='weight-log-v13';
 const ASSETS=['./','./index.html','./manifest.webmanifest'];
 
-const COMPACT_STYLE=`<style id="compact-mobile-v12">
+const COMPACT_STYLE=`<style id="compact-mobile-v13">
 @media(max-width:520px){
   .wrap{padding:12px}
   .head{margin:3px 0 9px}
@@ -16,6 +16,8 @@ const COMPACT_STYLE=`<style id="compact-mobile-v12">
   #weightPanel .row{display:grid!important;grid-template-columns:calc((100% - 8px)/2) calc((100% - 8px)/2)!important;gap:8px!important;align-items:end!important;width:100%;overflow:hidden}
   #weightPanel .row .field{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
   #weightPanel .row .field input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;height:48px!important;box-sizing:border-box!important;padding:10px 9px!important;font-size:15px!important;line-height:1.2!important}
+  #weightPanel .weightDateProxy{height:48px!important;min-height:48px!important;max-height:48px!important;border-radius:14px!important}
+  #weightPanel .weightDateProxy #date{height:48px!important;min-height:48px!important;max-height:48px!important;padding:0!important}
   #weightPanel .row .field input[type="date"]{appearance:none;-webkit-appearance:none;padding:10px 7px!important;font-size:14px!important}
   #weightPanel .row .field input[type="date"]::-webkit-date-and-time-value{text-align:center;min-width:0;margin:0}
   #weightPanel textarea{min-height:52px;height:52px;padding:10px 11px;font-size:14px}
