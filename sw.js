@@ -1,5 +1,36 @@
-const CACHE='weight-log-v8';
+const CACHE='weight-log-v9';
 const ASSETS=['./','./index.html','./manifest.webmanifest'];
+
+const COMPACT_STYLE=`<style id="compact-mobile-v9">
+@media(max-width:520px){
+  .wrap{padding:12px}
+  .head{margin:3px 0 9px}
+  .card{padding:13px;margin-bottom:10px}
+  .chartTop{margin-bottom:6px}
+  .rangeTabs{gap:7px}
+  .rangeBtn{padding:7px 10px}
+  .recordTabs{margin-bottom:9px;gap:7px}
+  .tabBtn{padding:10px 7px;min-width:0}
+  #weightPanel .sectionTitle{font-size:17px}
+  #weightPanel>.sub{margin-bottom:7px!important}
+  #weightPanel .row{flex-direction:row!important;align-items:flex-end;gap:8px}
+  #weightPanel .row .field{width:50%;flex:1 1 0}
+  #weightPanel input{padding:11px 10px;font-size:15px}
+  #weightPanel textarea{min-height:52px;height:52px;padding:10px 11px;font-size:14px}
+  #weightPanel .gap{height:7px}
+  #weightPanel label{margin-bottom:4px}
+  #weightPanel .primary{padding:12px 14px}
+}
+</style>`;
+
+function compactHtml(html){
+  let out=html;
+  out=out.replace('canvas{width:100%;height:170px;', 'canvas{width:100%;height:155px;');
+  out=out.replace('<canvas id="chart" width="680" height="170"></canvas>', '<canvas id="chart" width="680" height="155"></canvas>');
+  out=out.replace('w=c.clientWidth||340,h=170;', 'w=c.clientWidth||340,h=155;');
+  out=out.replace('</head>', COMPACT_STYLE+'\n</head>');
+  return out;
+}
 
 self.addEventListener('install',e=>{
   self.skipWaiting();
@@ -16,13 +47,25 @@ self.addEventListener('activate',e=>{
 self.addEventListener('fetch',e=>{
   const req=e.request;
   if(req.mode==='navigate'){
-    e.respondWith(
-      fetch(req).then(res=>{
-        const copy=res.clone();
-        caches.open(CACHE).then(c=>c.put('./index.html',copy));
-        return res;
-      }).catch(()=>caches.match('./index.html'))
-    );
+    e.respondWith((async()=>{
+      try{
+        const res=await fetch(req,{cache:'no-store'});
+        const type=res.headers.get('content-type')||'';
+        if(!type.includes('text/html')) return res;
+        const html=compactHtml(await res.text());
+        const headers=new Headers(res.headers);
+        headers.delete('content-length');
+        const transformed=new Response(html,{status:res.status,statusText:res.statusText,headers});
+        const cacheCopy=transformed.clone();
+        caches.open(CACHE).then(c=>c.put('./index.html',cacheCopy));
+        return transformed;
+      }catch(err){
+        const cached=await caches.match('./index.html');
+        if(!cached) throw err;
+        const html=compactHtml(await cached.text());
+        return new Response(html,{headers:{'content-type':'text/html; charset=utf-8'}});
+      }
+    })());
     return;
   }
   e.respondWith(
