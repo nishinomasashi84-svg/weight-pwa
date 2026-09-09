@@ -1,7 +1,7 @@
-const CACHE='weight-log-v11';
+const CACHE='weight-log-v12';
 const ASSETS=['./','./index.html','./manifest.webmanifest'];
 
-const COMPACT_STYLE=`<style id="compact-mobile-v11">
+const COMPACT_STYLE=`<style id="compact-mobile-v12">
 @media(max-width:520px){
   .wrap{padding:12px}
   .head{margin:3px 0 9px}
@@ -13,10 +13,11 @@ const COMPACT_STYLE=`<style id="compact-mobile-v11">
   .tabBtn{padding:10px 7px;min-width:0}
   #weightPanel .sectionTitle{font-size:17px}
   #weightPanel>.sub{margin-bottom:7px!important}
-  #weightPanel .row{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end;gap:8px}
-  #weightPanel .row .field{width:auto!important;min-width:0;overflow:hidden}
-  #weightPanel input{width:100%!important;height:48px;padding:10px 9px;font-size:15px;line-height:1.2}
-  #weightPanel input[type="date"]{padding-left:7px;padding-right:3px;font-size:14px}
+  #weightPanel .row{display:grid!important;grid-template-columns:calc((100% - 8px)/2) calc((100% - 8px)/2)!important;gap:8px!important;align-items:end!important;width:100%;overflow:hidden}
+  #weightPanel .row .field{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+  #weightPanel .row .field input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;height:48px!important;box-sizing:border-box!important;padding:10px 9px!important;font-size:15px!important;line-height:1.2!important}
+  #weightPanel .row .field input[type="date"]{appearance:none;-webkit-appearance:none;padding:10px 7px!important;font-size:14px!important}
+  #weightPanel .row .field input[type="date"]::-webkit-date-and-time-value{text-align:center;min-width:0;margin:0}
   #weightPanel textarea{min-height:52px;height:52px;padding:10px 11px;font-size:14px}
   #weightPanel .gap{height:7px}
   #weightPanel label{margin-bottom:4px}
