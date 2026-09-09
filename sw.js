@@ -1,7 +1,7 @@
-const CACHE='weight-log-v9';
+const CACHE='weight-log-v10';
 const ASSETS=['./','./index.html','./manifest.webmanifest'];
 
-const COMPACT_STYLE=`<style id="compact-mobile-v9">
+const COMPACT_STYLE=`<style id="compact-mobile-v10">
 @media(max-width:520px){
   .wrap{padding:12px}
   .head{margin:3px 0 9px}
@@ -13,9 +13,10 @@ const COMPACT_STYLE=`<style id="compact-mobile-v9">
   .tabBtn{padding:10px 7px;min-width:0}
   #weightPanel .sectionTitle{font-size:17px}
   #weightPanel>.sub{margin-bottom:7px!important}
-  #weightPanel .row{flex-direction:row!important;align-items:flex-end;gap:8px}
-  #weightPanel .row .field{width:50%;flex:1 1 0}
-  #weightPanel input{padding:11px 10px;font-size:15px}
+  #weightPanel .row{display:grid!important;grid-template-columns:minmax(0,3fr) minmax(0,2fr);align-items:end;gap:8px}
+  #weightPanel .row .field{width:auto!important;min-width:0;overflow:visible}
+  #weightPanel input{height:48px;padding:10px 9px;font-size:15px;line-height:1.2}
+  #weightPanel input[type="date"]{padding-left:9px;padding-right:5px;font-size:15px}
   #weightPanel textarea{min-height:52px;height:52px;padding:10px 11px;font-size:14px}
   #weightPanel .gap{height:7px}
   #weightPanel label{margin-bottom:4px}
