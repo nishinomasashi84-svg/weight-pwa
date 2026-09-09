@@ -100,9 +100,9 @@ const $=s=>document.querySelector(s);let rangeDays=30,currentLog='weight',editin
 const localDate=()=>{const d=new Date(),z=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`};
 const load=(k)=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{return []}};const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const sortByDate=a=>[...a].sort((x,y)=>x.date.localeCompare(y.date));
-const esc=s=>String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+const esc=s=>String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 ['#date','#mealDate','#exerciseDate'].forEach(id=>$(id).value=localDate());
-requestAnimationFrame(()=>$('#weightPanel').classList.add('active'));
+setTimeout(()=>$('#weightPanel').classList.add('active'),150);
 
 const CALORIE_RULES=[
   {keys:['レッドブルシュガーフリー','レッドブル シュガーフリー'],kcal:0,unit:false},
