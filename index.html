@@ -49,7 +49,7 @@
       <button class="tabBtn" data-panel="exercisePanel">🏃 運動</button>
     </div>
 
-    <div class="panel active" id="weightPanel">
+    <div class="panel" id="weightPanel">
       <div class="sectionTitle">体重を記録</div><div class="sub" style="margin-bottom:10px">日付・体重と、その日のメモを残せます</div>
       <div class="row"><div class="field"><label>日付</label><input type="date" id="date"></div><div class="field"><label>体重（kg）</label><input type="number" id="weight" inputmode="decimal" step="0.1" min="20" max="300" placeholder="例 70.8"></div></div>
       <div class="gap"></div><label>メモ（任意）</label><textarea id="weightMemo" placeholder="例：外食多め、飲み会、体調良い、フットサル翌日など"></textarea>
@@ -102,6 +102,7 @@ const load=(k)=>{try{return JSON.parse(localStorage.getItem(k)||'[]')}catch{retu
 const sortByDate=a=>[...a].sort((x,y)=>x.date.localeCompare(y.date));
 const esc=s=>String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
 ['#date','#mealDate','#exerciseDate'].forEach(id=>$(id).value=localDate());
+requestAnimationFrame(()=>$('#weightPanel').classList.add('active'));
 
 const CALORIE_RULES=[
   {keys:['レッドブルシュガーフリー','レッドブル シュガーフリー'],kcal:0,unit:false},
