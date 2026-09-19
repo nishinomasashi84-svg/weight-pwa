@@ -32,6 +32,14 @@
   <div class="head"><div><h1>Weight Log</h1><div class="sub">体重・食事・運動をシンプルに記録</div></div><div>⚖️</div></div>
 
   <section class="card">
+    <div class="sectionTitle">🔥 ダイエットポイント</div>
+    <div class="sub" style="margin-bottom:10px">食事の量と運動を選ぶだけで、今日のポイントを記録できます</div>
+    <div class="todayItem" style="margin-bottom:12px;text-align:center"><div class="todayLabel">今日のポイント</div><div class="todayValue" id="dietPoint" style="font-size:32px">0 pt</div></div>
+    <div id="dietControls"></div>
+    <div class="gap"></div><button class="primary full" id="saveDietBtn">ポイントを保存</button>
+  </section>
+
+  <section class="card">
     <div class="chartTop">
       <div><div class="sub">現在</div><div class="latest" id="latestWeight">--</div></div>
       <div class="goalText">目標 68.0 kg<br><span id="goalRemain">記録待ち</span></div>
@@ -75,14 +83,6 @@
       <div class="gap"></div><label>メモ（任意）</label><textarea id="exerciseMemo" placeholder="例：オークアリーナでフットサル"></textarea>
       <div class="gap"></div><button class="primary full" id="saveExerciseBtn">運動を保存</button>
     </div>
-  </section>
-
-  <section class="card">
-    <div class="sectionTitle">🔥 ダイエットポイント</div>
-    <div class="sub" style="margin-bottom:10px">食事の量と運動を選ぶだけで、今日のポイントを記録できます</div>
-    <div class="todayItem" style="margin-bottom:12px;text-align:center"><div class="todayLabel">今日のポイント</div><div class="todayValue" id="dietPoint" style="font-size:32px">0 pt</div></div>
-    <div id="dietControls"></div>
-    <div class="gap"></div><button class="primary full" id="saveDietBtn">ポイントを保存</button>
   </section>
 
   <section class="card">
