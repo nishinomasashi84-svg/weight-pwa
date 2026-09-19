@@ -35,6 +35,12 @@
     <div class="sectionTitle">🔥 ダイエットポイント</div>
     <div class="sub" style="margin-bottom:10px">食事の量と運動を選ぶだけで、今日のポイントを記録できます</div>
     <div class="todayItem" style="margin-bottom:12px;text-align:center"><div class="todayLabel">今日のポイント</div><div class="todayValue" id="dietPoint" style="font-size:32px">0 pt</div></div>
+    <div class="recordTabs" id="dietTabs">
+      <button class="tabBtn active" data-diet-panel="breakfast">☀️ 朝</button>
+      <button class="tabBtn" data-diet-panel="lunch">🍱 昼</button>
+      <button class="tabBtn" data-diet-panel="dinner">🌙 夜</button>
+      <button class="tabBtn" data-diet-panel="exercise">🏃 運動</button>
+    </div>
     <div id="dietControls"></div>
     <div class="gap"></div><button class="primary full" id="saveDietBtn">ポイントを保存</button>
   </section>
@@ -160,7 +166,9 @@ document.querySelectorAll('.logBtn').forEach(b=>b.addEventListener('click',()=>{
 const DIET_RULES={breakfast:{label:'朝ごはん',opts:{'ライト':5,'ミドル':0,'ヘビー':-5}},lunch:{label:'昼ごはん',opts:{'ライト':5,'ミドル':0,'ヘビー':-5}},dinner:{label:'夜ごはん',opts:{'ライト':10,'ミドル':0,'ヘビー':-10}},exercise:{label:'運動',opts:{'なし':0,'軽め':5,'普通':10,'しっかり':20}}};
 function dietToday(){return load(DIET_KEY).find(x=>x.date===localDate())||{date:localDate(),breakfast:'ミドル',lunch:'ミドル',dinner:'ミドル',exercise:'なし'}}
 function dietPoints(r){return Object.keys(DIET_RULES).reduce((n,k)=>n+(DIET_RULES[k].opts[r[k]]||0),0)}
-function renderDietControls(){const r=dietToday(),box=$('#dietControls');box.innerHTML='';Object.entries(DIET_RULES).forEach(([k,rule])=>{const d=document.createElement('div');d.style.marginBottom='12px';d.innerHTML='<label>'+rule.label+'</label><div class="quickMeal">'+Object.entries(rule.opts).map(([name,pt])=>'<button type="button" class="'+(r[k]===name?'primary':'ghost')+'" data-diet="'+k+'" data-val="'+name+'">'+name+' '+(pt>0?'+':'')+pt+'pt</button>').join('')+'</div>';box.appendChild(d)});$('#dietPoint').textContent=(dietPoints(r)>0?'+':'')+dietPoints(r)+' pt';box.querySelectorAll('[data-diet]').forEach(b=>b.onclick=()=>{let a=load(DIET_KEY).filter(x=>x.date!==localDate()),x=dietToday();x[b.dataset.diet]=b.dataset.val;a.push(x);save(DIET_KEY,a);renderDietControls()})}
+let currentDietPanel='breakfast';
+function renderDietControls(){const r=dietToday(),box=$('#dietControls'),rule=DIET_RULES[currentDietPanel];box.innerHTML='<div style="margin-bottom:12px"><label>'+rule.label+'</label><div class="quickMeal">'+Object.entries(rule.opts).map(([name,pt])=>'<button type="button" class="'+(r[currentDietPanel]===name?'primary':'ghost')+'" data-diet="'+currentDietPanel+'" data-val="'+name+'">'+name+' '+(pt>0?'+':'')+pt+'pt</button>').join('')+'</div></div>';$('#dietPoint').textContent=(dietPoints(r)>0?'+':'')+dietPoints(r)+' pt';box.querySelectorAll('[data-diet]').forEach(b=>b.onclick=()=>{let a=load(DIET_KEY).filter(x=>x.date!==localDate()),x=dietToday();x[b.dataset.diet]=b.dataset.val;a.push(x);save(DIET_KEY,a);renderDietControls()})}
+document.querySelectorAll('[data-diet-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-diet-panel]').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentDietPanel=b.dataset.dietPanel;renderDietControls()}));
 $('#saveDietBtn').addEventListener('click',()=>{renderDietControls();alert('今日のダイエットポイントを保存しました')});
 $('#saveWeightBtn').addEventListener('click',()=>{const date=$('#date').value,weight=parseFloat($('#weight').value),memo=$('#weightMemo').value.trim();if(!date||!Number.isFinite(weight))return alert('日付と体重を入力してください');let a=load(KEY).filter(x=>x.date!==date);a.push({date,weight,memo});save(KEY,sortByDate(a));$('#weight').value='';$('#weightMemo').value='';render()});
 $('#saveMealBtn').addEventListener('click',()=>{const date=$('#mealDate').value,type=$('#mealType').value,name=$('#mealName').value.trim(),kcal=parseInt($('#mealKcal').value,10);if(!date||!name||!Number.isFinite(kcal))return alert('日付・メニュー・カロリーを入力してください');let a=load(MEAL_KEY);if(editingMealId!==null)a=a.map(x=>x.id===editingMealId?{...x,date,type,name,kcal}:x);else a.push({id:Date.now(),date,type,name,kcal});save(MEAL_KEY,a);editingMealId=null;$('#mealName').value='';$('#mealKcal').value='';$('#saveMealBtn').textContent='食事を保存';$('#mealNotice').classList.add('hidden');$('#estimateNote').textContent='※予測値です。商品や量によって実際のカロリーは変わります。';render()});
