@@ -22,6 +22,7 @@
     input[type="date"]::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
     .weightDateProxy{position:relative;width:100%;height:52px;min-height:52px;max-height:52px;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}.weightDateText{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;line-height:1;color:#0a84ff;pointer-events:none}.weightDateProxy #date{position:absolute;inset:0;width:100%;height:52px;min-height:52px;max-height:52px;box-sizing:border-box;margin:0;padding:0;border:0;border-radius:14px;opacity:0;z-index:2;cursor:pointer}
     .quickMeal{display:flex;gap:8px;margin-top:8px}.quickMeal button{flex:1;padding:11px 12px;font-size:13px}.estimateNote{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+    .dietCard{padding:12px 14px}.dietHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.dietHead .sectionTitle{font-size:16px;margin:0}.dietPointPill{flex:0 0 auto;background:#111827;color:#fff;border-radius:999px;padding:6px 10px;font-size:15px;font-weight:850;line-height:1}.dietCard .recordTabs{gap:6px;margin-bottom:5px}.dietCard .tabBtn{min-width:74px;padding:8px 7px;border-radius:12px;font-size:12px}.dietCard .quickMeal{gap:6px;margin-top:4px}.dietCard .quickMeal button{padding:8px 7px;font-size:12px}.dietCard #dietControls label{margin-bottom:3px}.dietCard #dietControls>div{margin-bottom:0!important}
     .todayGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.todayItem{background:#f8fafc;border-radius:15px;padding:12px}.todayLabel{font-size:11px;color:var(--muted)}.todayValue{font-size:18px;font-weight:850;margin-top:4px}.net{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.net b{font-size:18px}
     .logTabs{display:flex;gap:8px;margin-bottom:10px}.logBtn{flex:1;background:#f3f4f6;color:#111827;padding:10px 8px;font-size:12px}.logBtn.active{background:#111827;color:#fff}.history{display:flex;flex-direction:column;gap:0}.item{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 2px;border-bottom:1px solid var(--line)}.item:last-child{border-bottom:0}.itemMain{min-width:0}.itemTitle{font-weight:800}.itemMeta{font-size:12px;color:var(--muted);margin-top:3px}.itemActions{display:flex;align-items:center;gap:7px;white-space:nowrap}.itemActions button{padding:8px 9px;font-size:12px}.empty{text-align:center;color:var(--muted);padding:20px 0}.notice{background:#eff6ff;border:1px solid #bfdbfe;border-radius:14px;padding:11px;font-size:13px;line-height:1.5;margin-bottom:10px}.footerNote{font-size:12px;color:var(--muted);line-height:1.6}.hidden{display:none!important}
     @media(max-width:520px){.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end}.todayGrid{grid-template-columns:1fr 1fr 1fr}.chartTop{align-items:center}.latest{font-size:27px}}
@@ -30,32 +31,6 @@
 <body>
 <div class="wrap">
   <div class="head"><div><h1>Weight Log</h1><div class="sub">体重・食事・運動をシンプルに記録</div></div><div>⚖️</div></div>
-
-  <section class="card">
-    <div class="sectionTitle">🔥 ダイエットポイント</div>
-    <div class="sub" style="margin-bottom:10px">食事の量と運動を選ぶだけで、今日のポイントを記録できます</div>
-    <div class="todayItem" style="margin-bottom:12px;text-align:center"><div class="todayLabel">今日のポイント</div><div class="todayValue" id="dietPoint" style="font-size:32px">0 pt</div></div>
-    <div class="recordTabs" id="dietTabs">
-      <button class="tabBtn active" data-diet-panel="breakfast">☀️ 朝</button>
-      <button class="tabBtn" data-diet-panel="lunch">🍱 昼</button>
-      <button class="tabBtn" data-diet-panel="dinner">🌙 夜</button>
-      <button class="tabBtn" data-diet-panel="exercise">🏃 運動管理</button>
-    </div>
-    <div id="dietControls"></div>
-    <div class="gap"></div><button class="primary full" id="saveDietBtn">ポイントを保存</button>
-  </section>
-
-  <section class="card">
-    <div class="chartTop">
-      <div><div class="sub">現在</div><div class="latest" id="latestWeight">--</div></div>
-      <div class="goalText">目標 68.0 kg<br><span id="goalRemain">記録待ち</span></div>
-    </div>
-    <div class="rangeTabs" id="rangeTabs">
-      <button class="rangeBtn" data-days="7">7日</button><button class="rangeBtn active" data-days="30">1か月</button><button class="rangeBtn" data-days="90">3か月</button><button class="rangeBtn" data-days="0">全期間</button>
-    </div>
-    <canvas id="chart" width="680" height="170"></canvas>
-    <div class="sub" style="margin-top:6px">📝 がある日は、グラフの点をタップするとメモを確認できます。</div>
-  </section>
 
   <section class="card">
     <div class="recordTabs">
@@ -89,6 +64,29 @@
       <div class="gap"></div><label>メモ（任意）</label><textarea id="exerciseMemo" placeholder="例：オークアリーナでフットサル"></textarea>
       <div class="gap"></div><button class="primary full" id="saveExerciseBtn">運動を保存</button>
     </div>
+  </section>
+
+  <section class="card dietCard">
+    <div class="dietHead"><div class="sectionTitle">🔥 ダイエットポイント</div><div class="dietPointPill" id="dietPoint">0 pt</div></div>
+    <div class="recordTabs" id="dietTabs">
+      <button class="tabBtn active" data-diet-panel="breakfast">☀️ 朝</button>
+      <button class="tabBtn" data-diet-panel="lunch">🍱 昼</button>
+      <button class="tabBtn" data-diet-panel="dinner">🌙 夜</button>
+      <button class="tabBtn" data-diet-panel="exercise">🏃 運動管理</button>
+    </div>
+    <div id="dietControls"></div>
+  </section>
+
+  <section class="card">
+    <div class="chartTop">
+      <div><div class="sub">現在</div><div class="latest" id="latestWeight">--</div></div>
+      <div class="goalText">目標 68.0 kg<br><span id="goalRemain">記録待ち</span></div>
+    </div>
+    <div class="rangeTabs" id="rangeTabs">
+      <button class="rangeBtn" data-days="7">7日</button><button class="rangeBtn active" data-days="30">1か月</button><button class="rangeBtn" data-days="90">3か月</button><button class="rangeBtn" data-days="0">全期間</button>
+    </div>
+    <canvas id="chart" width="680" height="170"></canvas>
+    <div class="sub" style="margin-top:6px">📝 がある日は、グラフの点をタップするとメモを確認できます。</div>
   </section>
 
   <section class="card">
@@ -159,7 +157,7 @@ $('#usualBreakfastBtn').addEventListener('click',()=>{
   $('#estimateNote').textContent='いつもの朝食：約180 kcal（レッドブル シュガーフリー 0 kcal＋おにぎり1個 約180 kcal）';
 });
 
-document.querySelectorAll('.tabBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tabBtn').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.panel).classList.add('active')}));
+document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-panel]').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.panel).classList.add('active')}));
 document.querySelectorAll('.rangeBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rangeBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');rangeDays=Number(b.dataset.days);renderChart()}));
 document.querySelectorAll('.logBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.logBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentLog=b.dataset.log;renderLogs()}));
 
@@ -169,7 +167,6 @@ function dietPoints(r){return Object.keys(DIET_RULES).reduce((n,k)=>n+(DIET_RULE
 let currentDietPanel='breakfast';
 function renderDietControls(){const r=dietToday(),box=$('#dietControls'),rule=DIET_RULES[currentDietPanel];box.innerHTML='<div style="margin-bottom:12px"><label>'+rule.label+'</label><div class="quickMeal">'+Object.entries(rule.opts).map(([name,pt])=>'<button type="button" class="'+(r[currentDietPanel]===name?'primary':'ghost')+'" data-diet="'+currentDietPanel+'" data-val="'+name+'">'+name+' '+(pt>0?'+':'')+pt+'pt</button>').join('')+'</div></div>';$('#dietPoint').textContent=(dietPoints(r)>0?'+':'')+dietPoints(r)+' pt';box.querySelectorAll('[data-diet]').forEach(b=>b.onclick=()=>{let a=load(DIET_KEY).filter(x=>x.date!==localDate()),x=dietToday();x[b.dataset.diet]=b.dataset.val;a.push(x);save(DIET_KEY,a);renderDietControls()})}
 document.querySelectorAll('[data-diet-panel]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-diet-panel]').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentDietPanel=b.dataset.dietPanel;renderDietControls()}));
-$('#saveDietBtn').addEventListener('click',()=>{renderDietControls();alert('今日のダイエットポイントを保存しました')});
 $('#saveWeightBtn').addEventListener('click',()=>{const date=$('#date').value,weight=parseFloat($('#weight').value),memo=$('#weightMemo').value.trim();if(!date||!Number.isFinite(weight))return alert('日付と体重を入力してください');let a=load(KEY).filter(x=>x.date!==date);a.push({date,weight,memo});save(KEY,sortByDate(a));$('#weight').value='';$('#weightMemo').value='';render()});
 $('#saveMealBtn').addEventListener('click',()=>{const date=$('#mealDate').value,type=$('#mealType').value,name=$('#mealName').value.trim(),kcal=parseInt($('#mealKcal').value,10);if(!date||!name||!Number.isFinite(kcal))return alert('日付・メニュー・カロリーを入力してください');let a=load(MEAL_KEY);if(editingMealId!==null)a=a.map(x=>x.id===editingMealId?{...x,date,type,name,kcal}:x);else a.push({id:Date.now(),date,type,name,kcal});save(MEAL_KEY,a);editingMealId=null;$('#mealName').value='';$('#mealKcal').value='';$('#saveMealBtn').textContent='食事を保存';$('#mealNotice').classList.add('hidden');$('#estimateNote').textContent='※予測値です。商品や量によって実際のカロリーは変わります。';render()});
 $('#saveExerciseBtn').addEventListener('click',()=>{const date=$('#exerciseDate').value,type=$('#exerciseType').value,minutes=parseInt($('#exerciseMinutes').value,10),kcal=parseInt($('#exerciseKcal').value,10),memo=$('#exerciseMemo').value.trim();if(!date||!Number.isFinite(minutes)||!Number.isFinite(kcal))return alert('日付・時間・消費カロリーを入力してください');let a=load(EXERCISE_KEY);if(editingExerciseId!==null)a=a.map(x=>x.id===editingExerciseId?{...x,date,type,minutes,kcal,memo}:x);else a.push({id:Date.now(),date,type,minutes,kcal,memo});save(EXERCISE_KEY,a);editingExerciseId=null;$('#exerciseMinutes').value='';$('#exerciseKcal').value='';$('#exerciseMemo').value='';$('#saveExerciseBtn').textContent='運動を保存';render()});
