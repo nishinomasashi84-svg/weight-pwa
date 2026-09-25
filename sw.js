@@ -1,7 +1,7 @@
-const CACHE='weight-log-v13';
+const CACHE='weight-log-v14';
 const ASSETS=['./','./index.html','./manifest.webmanifest'];
 
-const COMPACT_STYLE=`<style id="compact-mobile-v13">
+const COMPACT_STYLE=`<style id="compact-mobile-v14">
 @media(max-width:520px){
   .wrap{padding:12px}
   .head{margin:3px 0 9px}
