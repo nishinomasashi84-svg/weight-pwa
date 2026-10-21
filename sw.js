@@ -1,4 +1,4 @@
-const CACHE='weight-log-v16';
+const CACHE='weight-log-v17';
 const ASSETS=['./','./index.html','./manifest.webmanifest'];
 
 const COMPACT_STYLE=`<style id="compact-mobile-v16">
