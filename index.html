@@ -15,7 +15,7 @@
     .wrap{max-width:720px;margin:auto;padding:16px}.head{display:flex;justify-content:space-between;align-items:center;margin:6px 0 12px}h1{font-size:28px;margin:0}.sub{color:var(--muted);font-size:13px;line-height:1.5}
     .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:0 8px 30px rgba(17,24,39,.05)}
     .chartTop{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:8px}.latest{font-size:29px;font-weight:850;line-height:1}.goalText{font-size:12px;color:var(--muted);text-align:right}.rangeTabs,.recordTabs{display:flex;gap:8px;overflow:auto;scrollbar-width:none}.rangeTabs::-webkit-scrollbar,.recordTabs::-webkit-scrollbar{display:none}.rangeBtn{padding:8px 11px;border:0;border-radius:999px;background:#f3f4f6;color:#111827;font-size:12px;font-weight:700}.rangeBtn.active{background:#111827;color:#fff}
-    canvas{width:100%;height:170px;display:block;touch-action:manipulation}.recordTabs{margin-bottom:12px}.tabBtn{flex:1;min-width:94px;border:1px solid var(--line);background:#fff;padding:13px 10px;border-radius:14px;font-size:14px;font-weight:800}.tabBtn.active{background:#111827;color:#fff;border-color:#111827}.panel{display:none}.panel.active{display:block}
+    .chartScroll{width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y}.chartScroll canvas{width:auto;max-width:none;height:190px;display:block;touch-action:pan-x pan-y}.recordTabs{margin-bottom:12px}.tabBtn{flex:1;min-width:94px;border:1px solid var(--line);background:#fff;padding:13px 10px;border-radius:14px;font-size:14px;font-weight:800}.tabBtn.active{background:#111827;color:#fff;border-color:#111827}.panel{display:none}.panel.active{display:block}
     .sectionTitle{font-size:18px;font-weight:850;margin-bottom:4px}.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:end}.field{min-width:0;width:100%;max-width:100%;overflow:hidden}label{display:block;font-size:12px;color:var(--muted);margin:0 0 6px}input,select,textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box;padding:14px;border:1px solid var(--line);border-radius:14px;background:#fff;font-size:16px}input,select{height:52px}textarea{min-height:74px;resize:vertical}.gap{height:10px}button{border:0;border-radius:14px;padding:14px 16px;font-weight:800;font-size:15px}.primary{background:#111827;color:#fff}.ghost{background:#eef0f4;color:#111827}.danger{background:#fee2e2;color:#991b1b}.full{width:100%}
     input[type="date"]{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;height:52px;line-height:normal;text-align:center;padding:0 14px;position:relative}
     input[type="date"]::-webkit-date-and-time-value{display:flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;width:100%;height:50px;min-height:50px;text-align:center;margin:0;padding:0;line-height:normal;transform:none}
@@ -85,7 +85,8 @@
     <div class="rangeTabs" id="rangeTabs">
       <button class="rangeBtn" data-days="7">7日</button><button class="rangeBtn active" data-days="30">1か月</button><button class="rangeBtn" data-days="90">3か月</button><button class="rangeBtn" data-days="0">全期間</button>
     </div>
-    <canvas id="chart" width="680" height="170"></canvas>
+    <div class="chartScroll" id="chartScroll" aria-label="体重グラフ・左右にスクロールできます"><canvas id="chart" width="680" height="190"></canvas></div>
+    <div class="sub" style="text-align:right;margin-top:2px">← グラフを左右にスクロール →</div>
     <div class="sub" style="margin-top:6px">📝 がある日は、グラフの点をタップするとメモを確認できます。</div>
   </section>
 
@@ -165,7 +166,7 @@ function setMainPanel(panelId,toggle=true){
   if(b&&p){b.classList.add('active');p.classList.add('active')}
 }
 document.querySelectorAll('[data-panel]').forEach(b=>b.addEventListener('click',()=>setMainPanel(b.dataset.panel,true)));
-document.querySelectorAll('.rangeBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rangeBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');rangeDays=Number(b.dataset.days);renderChart()}));
+document.querySelectorAll('.rangeBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.rangeBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');rangeDays=Number(b.dataset.days);renderChart();$('#chartScroll').scrollLeft=$('#chartScroll').scrollWidth}));
 document.querySelectorAll('.logBtn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.logBtn').forEach(x=>x.classList.remove('active'));b.classList.add('active');currentLog=b.dataset.log;renderLogs()}));
 
 const DIET_RULES={breakfast:{label:'朝ごはん',opts:{'ライト':5,'ミドル':0,'ヘビー':-5}},lunch:{label:'昼ごはん',opts:{'ライト':5,'ミドル':0,'ヘビー':-5}},dinner:{label:'夜ごはん',opts:{'ライト':10,'ミドル':0,'ヘビー':-10}},exercise:{label:'運動',opts:{'なし':0,'軽め':5,'普通':10,'しっかり':20}}};
@@ -199,18 +200,20 @@ const isoDay=n=>new Date(n).toISOString().slice(0,10);
 const dayLabel=s=>{const d=new Date(dateNumber(s)),days=['日','月','火','水','木','金','土'];return (d.getUTCMonth()+1)+'/'+d.getUTCDate()+'('+days[d.getUTCDay()]+')'};
 function chartData(){const all=sortByDate(load(KEY));const today=dateNumber(localDate());let start,end;if(rangeDays){end=today;start=end-(rangeDays-1)*86400000}else{start=all.length?dateNumber(all[0].date):today;end=Math.max(today,all.length?dateNumber(all[all.length-1].date):today)}return {data:all.filter(x=>dateNumber(x.date)>=start&&dateNumber(x.date)<=end),start,end}}
 function renderChart(){
-  const c=$('#chart'),ctx=c.getContext('2d'),dpr=window.devicePixelRatio||1,w=c.clientWidth||340,h=190;
-  c.style.height=h+'px';c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);chartHitPoints=[];
-  const {data,start,end}=chartData();
+  const c=$('#chart'),scroller=$('#chartScroll'),ctx=c.getContext('2d'),dpr=window.devicePixelRatio||1,h=190;
+  const {data,start,end}=chartData(),days=Math.round((end-start)/86400000)+1;
+  const w=Math.max(scroller.clientWidth||340,42+16+Math.max(1,days-1)*23);
+  c.style.width=w+'px';c.style.height=h+'px';c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);chartHitPoints=[];
   if(!data.length){ctx.fillStyle='#9ca3af';ctx.font='14px -apple-system';ctx.textAlign='center';ctx.fillText('まだ体重記録がありません',w/2,h/2);return}
   let vals=data.map(x=>Number(x.weight)),min=Math.min(...vals,GOAL),max=Math.max(...vals,GOAL);if(max-min<2){max+=1;min-=1}
   const pad={l:42,r:16,t:18,b:37},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b,yy=v=>pad.t+(max-v)/(max-min)*ch;
   const duration=Math.max(86400000,end-start),xx=date=>pad.l+(dateNumber(date)-start)/duration*cw;
   ctx.strokeStyle='#e5e7eb';ctx.lineWidth=1;
   for(let i=0;i<4;i++){const y=pad.t+i*ch/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke()}
-  const days=Math.round((end-start)/86400000)+1,step=days<=7?1:days<=31?5:days<=100?18:Math.max(1,Math.ceil(days/6));
-  const tickOffsets=[];for(let i=0;i<days;i+=step)tickOffsets.push(i);if(tickOffsets.at(-1)!==days-1)tickOffsets.push(days-1);
-  ctx.fillStyle='#6b7280';ctx.font=(days<=7?'10':'10')+'px -apple-system';ctx.textAlign='center';
+  const step=days<=7?(cw/(days-1||1)<75?2:1):days<=31?5:days<=100?7:14;
+  const tickOffsets=[];for(let i=0;i<days;i+=step)tickOffsets.push(i);
+  if(days>1&&days-1-tickOffsets.at(-1)>=Math.ceil(66/Math.max(1,cw/(days-1))))tickOffsets.push(days-1);
+  ctx.fillStyle='#6b7280';ctx.font='10px -apple-system';ctx.textAlign='center';
   tickOffsets.forEach(i=>{const x=pad.l+(i*86400000/duration)*cw,s=isoDay(start+i*86400000);ctx.strokeStyle='#f0f1f4';ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ch);ctx.stroke();ctx.fillStyle='#6b7280';ctx.textAlign=i===0?'left':i===days-1?'right':'center';ctx.fillText(dayLabel(s),x,h-12)});
   ctx.setLineDash([5,5]);ctx.strokeStyle='#0f766e';ctx.beginPath();ctx.moveTo(pad.l,yy(GOAL));ctx.lineTo(w-pad.r,yy(GOAL));ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='#0f766e';ctx.font='11px -apple-system';ctx.textAlign='left';ctx.fillText('68kg',pad.l+4,Math.max(11,yy(GOAL)-5));
@@ -224,7 +227,7 @@ function renderLogs(){const box=$('#logHistory');box.innerHTML='';if(currentLog=
 if(currentLog==='meal'){const a=[...load(MEAL_KEY)].sort((x,y)=>(y.date+String(y.id)).localeCompare(x.date+String(x.id)));if(!a.length)return box.innerHTML='<div class="empty">食事記録はまだありません</div>';a.slice(0,40).forEach(r=>{const div=document.createElement('div');div.className='item';div.innerHTML=`<div class="itemMain"><div class="itemTitle">${esc(r.name)}</div><div class="itemMeta">${esc(r.date)} ・ ${esc(r.type)}</div></div><div class="itemActions"><b>${Number(r.kcal)} kcal</b><button class="ghost edit">編集</button><button class="danger del">削除</button></div>`;div.querySelector('.edit').onclick=()=>{editingMealId=r.id;$('#mealDate').value=r.date;$('#mealType').value=r.type;$('#mealName').value=r.name;$('#mealKcal').value=r.kcal;$('#saveMealBtn').textContent='変更を保存';setMainPanel('mealPanel',false);window.scrollTo({top:250,behavior:'smooth'})};div.querySelector('.del').onclick=()=>{if(confirm('この食事記録を削除しますか？')){save(MEAL_KEY,load(MEAL_KEY).filter(x=>x.id!==r.id));render()}};box.appendChild(div)})}
 if(currentLog==='exercise'){const a=[...load(EXERCISE_KEY)].sort((x,y)=>(y.date+String(y.id)).localeCompare(x.date+String(x.id)));if(!a.length)return box.innerHTML='<div class="empty">運動記録はまだありません</div>';a.slice(0,40).forEach(r=>{const div=document.createElement('div');div.className='item';div.innerHTML=`<div class="itemMain"><div class="itemTitle">${esc(r.type)}</div><div class="itemMeta">${esc(r.date)} ・ ${Number(r.minutes)}分${r.memo?' ・ '+esc(r.memo):''}</div></div><div class="itemActions"><b>${Number(r.kcal)} kcal</b><button class="ghost edit">編集</button><button class="danger del">削除</button></div>`;div.querySelector('.edit').onclick=()=>{editingExerciseId=r.id;$('#exerciseDate').value=r.date;$('#exerciseType').value=r.type;$('#exerciseMinutes').value=r.minutes;$('#exerciseKcal').value=r.kcal;$('#exerciseMemo').value=r.memo||'';$('#saveExerciseBtn').textContent='変更を保存';setMainPanel('exercisePanel',false);window.scrollTo({top:250,behavior:'smooth'})};div.querySelector('.del').onclick=()=>{if(confirm('この運動記録を削除しますか？')){save(EXERCISE_KEY,load(EXERCISE_KEY).filter(x=>x.id!==r.id));render()}};box.appendChild(div)})}}
 function applyMealImport(){const p=new URLSearchParams(location.search);const name=p.get('meal')||p.get('name'),kcal=p.get('kcal'),type=p.get('type'),date=p.get('date');if(!name&&!kcal)return;if(date)$('#mealDate').value=date;if(type&&['朝食','昼食','夕食','間食'].includes(type))$('#mealType').value=type;if(name)$('#mealName').value=name;if(kcal)$('#mealKcal').value=kcal;else updateMealEstimate();$('#mealNotice').textContent='ChatGPTから受け取った食事内容を入れました。確認して保存してください。';$('#mealNotice').classList.remove('hidden');document.querySelector('[data-panel="mealPanel"]').click()}
-window.addEventListener('resize',renderChart);render();applyMealImport();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+window.addEventListener('resize',renderChart);render();$('#chartScroll').scrollLeft=$('#chartScroll').scrollWidth;applyMealImport();if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 </script>
 </body>
 </html>
