@@ -208,10 +208,10 @@ function renderChart(){
   const duration=Math.max(86400000,end-start),xx=date=>pad.l+(dateNumber(date)-start)/duration*cw;
   ctx.strokeStyle='#e5e7eb';ctx.lineWidth=1;
   for(let i=0;i<4;i++){const y=pad.t+i*ch/3;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke()}
-  const days=Math.round((end-start)/86400000)+1,step=days<=7?1:days<=31?5:days<=100?14:Math.max(1,Math.ceil(days/6));
+  const days=Math.round((end-start)/86400000)+1,step=days<=7?1:days<=31?5:days<=100?18:Math.max(1,Math.ceil(days/6));
   const tickOffsets=[];for(let i=0;i<days;i+=step)tickOffsets.push(i);if(tickOffsets.at(-1)!==days-1)tickOffsets.push(days-1);
   ctx.fillStyle='#6b7280';ctx.font=(days<=7?'10':'10')+'px -apple-system';ctx.textAlign='center';
-  tickOffsets.forEach(i=>{const x=pad.l+(i*86400000/duration)*cw,s=isoDay(start+i*86400000);ctx.strokeStyle='#f0f1f4';ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ch);ctx.stroke();ctx.fillStyle='#6b7280';ctx.save();ctx.translate(x,h-7);ctx.rotate(-Math.PI/5);ctx.textAlign='right';ctx.fillText(dayLabel(s),0,0);ctx.restore()});
+  tickOffsets.forEach(i=>{const x=pad.l+(i*86400000/duration)*cw,s=isoDay(start+i*86400000);ctx.strokeStyle='#f0f1f4';ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ch);ctx.stroke();ctx.fillStyle='#6b7280';ctx.textAlign=i===0?'left':i===days-1?'right':'center';ctx.fillText(dayLabel(s),x,h-12)});
   ctx.setLineDash([5,5]);ctx.strokeStyle='#0f766e';ctx.beginPath();ctx.moveTo(pad.l,yy(GOAL));ctx.lineTo(w-pad.r,yy(GOAL));ctx.stroke();ctx.setLineDash([]);
   ctx.fillStyle='#0f766e';ctx.font='11px -apple-system';ctx.textAlign='left';ctx.fillText('68kg',pad.l+4,Math.max(11,yy(GOAL)-5));
   ctx.strokeStyle='#111827';ctx.lineWidth=2.5;ctx.beginPath();data.forEach((r,i)=>{const x=xx(r.date),y=yy(Number(r.weight));i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
